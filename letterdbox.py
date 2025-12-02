@@ -3,6 +3,8 @@ import json
 from typing import List, Dict, Union
 from dotenv import load_dotenv
 
+LETTERBOXD_BASE_URL = "https://letterboxd.com"
+
 load_dotenv()
 
 def test_scrape_films(sb) -> None:
@@ -33,6 +35,15 @@ def test_scrape_films(sb) -> None:
                 image_url = img_element.get_attribute('src') or ''
             except Exception:
                 pass
+
+            link_url = ''
+            try:
+                link_element = poster.find_element('css selector', 'a.frame')
+                href = link_element.get_attribute('href') or ''
+                if href:
+                    link_url = href if href.startswith('http') else f"{LETTERBOXD_BASE_URL}{href}"
+            except Exception:
+                pass
             
             if name:
                 try:
@@ -43,7 +54,8 @@ def test_scrape_films(sb) -> None:
                 results.append({
                     'name': name,
                     'score': score,
-                    'image': image_url
+                    'image': image_url,
+                    'url': link_url
                 })
         except Exception:
             continue

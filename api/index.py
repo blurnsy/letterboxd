@@ -363,5 +363,9 @@ HTML_TEMPLATE = """
 """
 
 def handler(request):
-    return HTML_TEMPLATE, 200, {'Content-Type': 'text/html; charset=utf-8'}
+    return {
+        'statusCode': 200,
+        'headers': {'Content-Type': 'text/html; charset=utf-8'},
+        'body': HTML_TEMPLATE
+    }
 

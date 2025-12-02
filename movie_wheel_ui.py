@@ -298,6 +298,7 @@ HTML_TEMPLATE = """
             minDuration: 3.1,
             maxDuration: 4.7
         };
+        const LETTERBOXD_SEARCH_URL = 'https://letterboxd.com/search/';
         
         function loadMovies() {
             fetch('/api/movies')
@@ -338,6 +339,17 @@ HTML_TEMPLATE = """
             return randomInRange(SPIN_CONFIG.minDuration, SPIN_CONFIG.maxDuration);
         }
         
+        function buildMovieLink(movie) {
+            if (movie.url) {
+                return { href: movie.url, isDirect: true };
+            }
+            if (!movie.name) {
+                return { href: '', isDirect: false };
+            }
+            const encodedName = encodeURIComponent(movie.name.trim());
+            return { href: `${LETTERBOXD_SEARCH_URL}${encodedName}/`, isDirect: false };
+        }
+        
         function spinWheel() {
             if (isSpinning || movies.length === 0) return;
             
@@ -359,13 +371,20 @@ HTML_TEMPLATE = """
             
             setTimeout(() => {
                 const movieLink = document.getElementById('selectedMovieLink');
+                const { href, isDirect } = buildMovieLink(randomMovie);
                 movieLink.textContent = randomMovie.name;
-                if (randomMovie.url) {
-                    movieLink.href = randomMovie.url;
+                if (href) {
+                    movieLink.href = href;
                     movieLink.style.pointerEvents = 'auto';
+                    movieLink.dataset.direct = isDirect ? 'true' : 'false';
+                    movieLink.title = isDirect
+                        ? 'Open on Letterboxd'
+                        : 'Search this title on Letterboxd';
                 } else {
                     movieLink.removeAttribute('href');
                     movieLink.style.pointerEvents = 'none';
+                    movieLink.removeAttribute('data-direct');
+                    movieLink.removeAttribute('title');
                 }
                 document.getElementById('selectedMovieScore').textContent = 
                     `${randomMovie.score.toFixed(2)} / 5.00`;

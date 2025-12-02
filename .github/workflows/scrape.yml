@@ -17,11 +17,15 @@ jobs:
         uses: actions/setup-python@v5
         with:
           python-version: '3.11'
+          cache: 'pip'
       
-      - name: Install system dependencies
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y chromium-browser chromium-chromedriver
+      - name: Cache pip dependencies
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/pip
+          key: ${{ runner.os }}-pip-${{ hashFiles('requirements.txt') }}
+          restore-keys: |
+            ${{ runner.os }}-pip-
       
       - name: Install Python dependencies
         run: |
@@ -33,7 +37,7 @@ jobs:
           lb_username: ${{ secrets.LB_USERNAME }}
           lb_password: ${{ secrets.LB_PASSWORD }}
         run: |
-          pytest letterdbox.py::test_scrape_films -v
+          pytest letterdbox.py::test_scrape_films -v --headless
       
       - name: Upload movies.json as artifact
         uses: actions/upload-artifact@v4

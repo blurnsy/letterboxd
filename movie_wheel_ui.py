@@ -191,12 +191,14 @@ HTML_TEMPLATE = """
             color: #1a1a1a;
             margin-bottom: 4px;
             text-align: center;
-            text-decoration: none;
+            text-decoration: underline;
             width: 100%;
+            cursor: pointer;
         }
         
-        .selected-movie-link[href]:hover {
-            text-decoration: underline;
+        .selected-movie-link:hover {
+            color: #40bcf4;
+            text-decoration: none;
         }
         
         .selected-movie-score {

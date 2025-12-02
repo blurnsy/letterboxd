@@ -1,12 +1,11 @@
 import os
 import json
 from typing import List, Dict, Union
-from seleniumbase import BaseCase
 from dotenv import load_dotenv
 
 load_dotenv()
 
-def test_scrape_films(sb: BaseCase, ) -> None:
+def test_scrape_films(sb) -> None:
     url = "https://letterboxd.com/films/popular/this/week/"
     sb.open(url)
     

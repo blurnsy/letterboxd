@@ -9,7 +9,6 @@ __pycache__/
 dist/
 build/
 .env
-movies.json
 .DS_Store
 *.log
 

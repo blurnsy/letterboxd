@@ -39,6 +39,15 @@ jobs:
         run: |
           pytest letterdbox.py::test_scrape_films -v --headless
       
+      - name: Commit and push movies.json
+        if: always()
+        run: |
+          git config --local user.email "action@github.com"
+          git config --local user.name "GitHub Action"
+          git add movies.json
+          git diff --staged --quiet || git commit -m "Update movies.json from automated scrape"
+          git push
+      
       - name: Upload movies.json as artifact
         uses: actions/upload-artifact@v4
         if: always()

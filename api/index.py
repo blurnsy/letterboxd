@@ -362,10 +362,12 @@ HTML_TEMPLATE = """
 </html>
 """
 
-def handler(request):
-    return {
-        'statusCode': 200,
-        'headers': {'Content-Type': 'text/html; charset=utf-8'},
-        'body': HTML_TEMPLATE
-    }
+from http.server import BaseHTTPRequestHandler
+
+class handler(BaseHTTPRequestHandler):
+    def do_GET(self):
+        self.send_response(200)
+        self.send_header('Content-Type', 'text/html; charset=utf-8')
+        self.end_headers()
+        self.wfile.write(HTML_TEMPLATE.encode('utf-8'))
 

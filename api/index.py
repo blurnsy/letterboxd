@@ -4,7 +4,7 @@ HTML_TEMPLATE = """
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Letterdbox Movie Recommendation Wheel</title>
+    <title>Letterboxd Movie Recommendation Wheel</title>
     <style>
         * {
             margin: 0;
@@ -171,12 +171,20 @@ HTML_TEMPLATE = """
             display: block;
         }
         
-        .selected-movie-name {
+        .selected-movie-link {
             font-size: 20px;
             font-weight: 700;
             color: #1a1a1a;
             margin-bottom: 4px;
             text-align: center;
+            text-decoration: underline;
+            width: 100%;
+            cursor: pointer;
+        }
+        
+        .selected-movie-link:hover {
+            color: #40bcf4;
+            text-decoration: none;
         }
         
         .selected-movie-score {
@@ -264,7 +272,7 @@ HTML_TEMPLATE = """
         <div class="selected-movie" id="selectedMovie">
             <button class="selected-movie-close" onclick="closeMovieNotification()" aria-label="Close">×</button>
             <img class="selected-movie-poster" id="selectedMoviePoster" src="" alt="" style="display: none;">
-            <div class="selected-movie-name" id="selectedMovieName"></div>
+            <a class="selected-movie-link" id="selectedMovieLink" target="_blank" rel="noopener noreferrer"></a>
             <div class="selected-movie-score" id="selectedMovieScore"></div>
         </div>
     </div>
@@ -272,6 +280,13 @@ HTML_TEMPLATE = """
     <script>
         let movies = [];
         let isSpinning = false;
+        const SPIN_CONFIG = {
+            minTurns: 10,
+            maxTurns: 18,
+            minDuration: 3.1,
+            maxDuration: 4.7
+        };
+        const LETTERBOXD_SEARCH_URL = 'https://letterboxd.com/search/';
         
         function loadMovies() {
             fetch('/api/movies')
@@ -298,6 +313,31 @@ HTML_TEMPLATE = """
             overlay.classList.remove('visible');
         }
         
+        function randomInRange(min, max) {
+            return min + (Math.random() * (max - min));
+        }
+        
+        function getSpinDegrees() {
+            const turns = randomInRange(SPIN_CONFIG.minTurns, SPIN_CONFIG.maxTurns);
+            const offset = Math.random() * 360;
+            return (turns * 360) + offset;
+        }
+        
+        function getSpinDuration() {
+            return randomInRange(SPIN_CONFIG.minDuration, SPIN_CONFIG.maxDuration);
+        }
+        
+        function buildMovieLink(movie) {
+            if (movie.url) {
+                return { href: movie.url, isDirect: true };
+            }
+            if (!movie.name) {
+                return { href: '', isDirect: false };
+            }
+            const encodedName = encodeURIComponent(movie.name.trim());
+            return { href: `${LETTERBOXD_SEARCH_URL}${encodedName}/`, isDirect: false };
+        }
+        
         function spinWheel() {
             if (isSpinning || movies.length === 0) return;
             
@@ -311,14 +351,29 @@ HTML_TEMPLATE = """
             
             const randomMovie = movies[Math.floor(Math.random() * movies.length)];
             const currentRotation = getCurrentRotation(wheel);
-            const spins = 5 + Math.random() * 5;
-            const finalRotation = currentRotation + (spins * 360) + (Math.random() * 360);
+            const rotationDelta = getSpinDegrees();
+            const spinDuration = getSpinDuration();
             
-            wheel.style.transition = 'transform 3s cubic-bezier(0.17, 0.67, 0.12, 0.99)';
-            wheel.style.transform = `rotate(${finalRotation}deg)`;
+            wheel.style.transition = `transform ${spinDuration}s cubic-bezier(0.17, 0.67, 0.12, 0.99)`;
+            wheel.style.transform = `rotate(${currentRotation + rotationDelta}deg)`;
             
             setTimeout(() => {
-                document.getElementById('selectedMovieName').textContent = randomMovie.name;
+                const movieLink = document.getElementById('selectedMovieLink');
+                const { href, isDirect } = buildMovieLink(randomMovie);
+                movieLink.textContent = randomMovie.name;
+                if (href) {
+                    movieLink.href = href;
+                    movieLink.style.pointerEvents = 'auto';
+                    movieLink.dataset.direct = isDirect ? 'true' : 'false';
+                    movieLink.title = isDirect
+                        ? 'Open on Letterboxd'
+                        : 'Search this title on Letterboxd';
+                } else {
+                    movieLink.removeAttribute('href');
+                    movieLink.style.pointerEvents = 'none';
+                    movieLink.removeAttribute('data-direct');
+                    movieLink.removeAttribute('title');
+                }
                 document.getElementById('selectedMovieScore').textContent = 
                     `${randomMovie.score.toFixed(2)} / 5.00`;
                 
@@ -334,7 +389,7 @@ HTML_TEMPLATE = """
                 overlay.classList.add('visible');
                 isSpinning = false;
                 button.disabled = false;
-            }, 3000);
+            }, spinDuration * 1000);
         }
         
         document.addEventListener('keydown', function(event) {
@@ -370,4 +425,3 @@ class handler(BaseHTTPRequestHandler):
         self.send_header('Content-Type', 'text/html; charset=utf-8')
         self.end_headers()
         self.wfile.write(HTML_TEMPLATE.encode('utf-8'))
-

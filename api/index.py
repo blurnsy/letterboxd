@@ -239,7 +239,7 @@ HTML_TEMPLATE = """
 </head>
 <body>
     <div class="container">
-        <h1>Letterdbox Wheel</h1>
+        <h1>Letterboxd Wheel</h1>
         <div class="subtitle">Random Selection From Popular Films This Week</div>
         
         <div class="stats">

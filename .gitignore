@@ -1,3 +1,4 @@
+# Python
 __pycache__/
 *.pyc
 *.pyo
@@ -12,3 +13,14 @@ build/
 .DS_Store
 *.log
 
+# Local Scripts (User's unrelated files)
+auth.py
+cook.py
+dominos.py
+new_recording.py
+target.py
+test.py
+recordings/
+pytest.ini
+setup.cfg
+__init__.py

@@ -86,9 +86,20 @@ def test_scrape_films(sb) -> None:
             
             # Get Genres
             genres = []
-            if sb.is_element_visible('#tab-genres'):
-                genre_elements = sb.find_elements('#tab-genres .text-sluglist a')
-                genres = [g.text for g in genre_elements]
+            try:
+                # Try finding genre links anywhere on page first (most reliable)
+                genre_links = sb.find_elements('a[href^="/films/genre/"]')
+                if genre_links:
+                    genres = [g.text for g in genre_links if g.text and g.text != 'All']
+                    # Remove duplicates while preserving order
+                    genres = list(dict.fromkeys(genres))
+                
+                # Fallback to tab if specific structure needed
+                if not genres and sb.is_element_present('#tab-genres'):
+                    genre_elements = sb.find_elements('#tab-genres .text-sluglist a')
+                    genres = [g.text for g in genre_elements]
+            except Exception as e:
+                print(f"Could not extract genres: {e}")
             
             film['description'] = description
             film['genres'] = genres

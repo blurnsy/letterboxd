@@ -132,68 +132,71 @@ HTML_TEMPLATE = """
         
         .selected-movie {
             position: relative;
-            padding: 32px;
+            padding: 32px 24px;
             background: white;
-            border-radius: 12px;
-            border: 1px solid #e5e5e5;
+            border-radius: 16px;
+            border: 1px solid #f0f0f0;
             display: flex;
             flex-direction: column;
-            justify-content: center;
+            justify-content: flex-start;
             align-items: center;
-            gap: 20px;
-            max-width: 90vw;
+            gap: 16px;
+            width: 100%;
+            max-width: 420px;
             max-height: 90vh;
-            overflow: auto;
-            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
-            transform: scale(0.9);
-            transition: transform 0.3s ease;
+            overflow-y: auto;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
+            transform: scale(0.95);
+            transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+            text-align: center;
         }
         
         .selected-movie-overlay.visible .selected-movie {
             transform: scale(1);
+            opacity: 1;
         }
         
         .selected-movie-close {
             position: absolute;
             top: 12px;
             right: 12px;
-            background: none;
+            background: rgba(0, 0, 0, 0.05);
             border: none;
-            font-size: 28px;
+            font-size: 20px;
             color: #666;
             cursor: pointer;
-            width: 36px;
-            height: 36px;
+            width: 32px;
+            height: 32px;
             display: flex;
             align-items: center;
             justify-content: center;
-            border-radius: 4px;
+            border-radius: 50%;
             transition: all 0.2s;
             z-index: 10;
         }
         
         .selected-movie-close:hover {
-            background: #f5f5f5;
-            color: #1a1a1a;
+            background: #e0e0e0;
+            color: #000;
         }
         
         .selected-movie-poster {
-            max-width: 100%;
+            max-width: 180px;
             height: auto;
-            border-radius: 6px;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+            border-radius: 8px;
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
             display: block;
+            margin-bottom: 4px;
         }
         
         .selected-movie-link {
-            font-size: 20px;
-            font-weight: 700;
-            color: #1a1a1a;
-            margin-bottom: 4px;
-            text-align: center;
-            text-decoration: underline;
-            width: 100%;
-            cursor: pointer;
+            font-size: 22px;
+            font-weight: 800;
+            color: #111;
+            line-height: 1.3;
+            text-decoration: none;
+            margin: 0;
+            padding: 0 8px;
         }
         
         .selected-movie-link:hover {
@@ -201,38 +204,50 @@ HTML_TEMPLATE = """
             text-decoration: none;
         }
         
+        .selected-movie-meta {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 8px;
+            width: 100%;
+        }
+        
         .selected-movie-score {
             font-size: 14px;
-            color: #666;
+            font-weight: 600;
+            color: #1a1a1a;
+            background: #f5f5f5;
+            padding: 4px 12px;
+            border-radius: 12px;
+            display: inline-block;
         }
 
         .selected-movie-genres {
             display: flex;
             flex-wrap: wrap;
-            gap: 8px;
+            gap: 6px;
             justify-content: center;
-            margin-top: 4px;
         }
 
         .genre-tag {
-            background: #f5f5f5;
+            background: white;
+            border: 1px solid #e5e5e5;
             color: #666;
-            padding: 4px 12px;
-            border-radius: 16px;
-            font-size: 12px;
-            font-weight: 600;
+            padding: 2px 10px;
+            border-radius: 12px;
+            font-size: 11px;
+            font-weight: 500;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
         }
 
         .selected-movie-description {
             font-size: 14px;
-            color: #444;
+            color: #555;
             line-height: 1.6;
-            text-align: center;
-            max-width: 600px;
-            margin-top: 8px;
-            overflow-y: auto;
-            max-height: 150px;
-            padding: 0 12px;
+            max-width: 100%;
+            padding: 0 8px;
+            margin-top: 4px;
         }
         
         .spin-button {
@@ -316,8 +331,10 @@ HTML_TEMPLATE = """
             <button class="selected-movie-close" onclick="closeMovieNotification()" aria-label="Close">×</button>
             <img class="selected-movie-poster" id="selectedMoviePoster" src="" alt="" style="display: none;">
             <a class="selected-movie-link" id="selectedMovieLink" target="_blank" rel="noopener noreferrer"></a>
-            <div class="selected-movie-score" id="selectedMovieScore"></div>
-            <div class="selected-movie-genres" id="selectedMovieGenres"></div>
+            <div class="selected-movie-meta">
+                <div class="selected-movie-score" id="selectedMovieScore"></div>
+                <div class="selected-movie-genres" id="selectedMovieGenres"></div>
+            </div>
             <div class="selected-movie-description" id="selectedMovieDescription"></div>
         </div>
     </div>
@@ -420,7 +437,7 @@ HTML_TEMPLATE = """
                     movieLink.removeAttribute('title');
                 }
                 document.getElementById('selectedMovieScore').textContent = 
-                    `${randomMovie.score.toFixed(2)} / 5.00`;
+                    `★ ${randomMovie.score.toFixed(2)}`;
 
                 // Update Genres
                 const genresContainer = document.getElementById('selectedMovieGenres');
@@ -495,11 +512,16 @@ def load_movies():
     if MOVIES_CACHE['data'] and (current_time - MOVIES_CACHE['timestamp']) < CACHE_DURATION:
         return MOVIES_CACHE['data']
     
-    movies = fetch_movies_from_github()
-    
-    if movies is None and MOVIES_FILE.exists():
-        with open(MOVIES_FILE, 'r') as f:
-            movies = json.load(f)
+    if MOVIES_FILE.exists():
+        try:
+            with open(MOVIES_FILE, 'r') as f:
+                movies = json.load(f)
+        except Exception as e:
+            print(f"Error reading local file: {e}")
+            movies = None
+            
+    if movies is None:
+        movies = fetch_movies_from_github()
     
     if movies is None:
         return None

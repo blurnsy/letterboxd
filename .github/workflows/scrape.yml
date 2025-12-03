@@ -8,14 +8,10 @@ on:
 jobs:
   scrape:
     runs-on: ubuntu-latest
-    permissions:
-      contents: write
     
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
-        with:
-          token: ${{ secrets.GITHUB_TOKEN }}
       
       - name: Set up Python
         uses: actions/setup-python@v5
@@ -43,15 +39,6 @@ jobs:
         run: |
           pytest letterdbox.py::test_scrape_films -v --headless
       
-      - name: Commit and push movies.json
-        if: always()
-        run: |
-          git config --local user.email "action@github.com"
-          git config --local user.name "GitHub Action"
-          git add movies.json
-          git diff --staged --quiet || git commit -m "Update movies.json from automated scrape"
-          git push
-      
       - name: Upload movies.json as artifact
         uses: actions/upload-artifact@v4
         if: always()
@@ -59,4 +46,3 @@ jobs:
           name: movies-data
           path: movies.json
           retention-days: 30
-

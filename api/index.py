@@ -191,6 +191,35 @@ HTML_TEMPLATE = """
             font-size: 14px;
             color: #666;
         }
+
+        .selected-movie-genres {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            justify-content: center;
+            margin-top: 4px;
+        }
+
+        .genre-tag {
+            background: #f5f5f5;
+            color: #666;
+            padding: 4px 12px;
+            border-radius: 16px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        .selected-movie-description {
+            font-size: 14px;
+            color: #444;
+            line-height: 1.6;
+            text-align: center;
+            max-width: 600px;
+            margin-top: 8px;
+            overflow-y: auto;
+            max-height: 150px;
+            padding: 0 12px;
+        }
         
         .spin-button {
             background: #1a1a1a;
@@ -274,6 +303,8 @@ HTML_TEMPLATE = """
             <img class="selected-movie-poster" id="selectedMoviePoster" src="" alt="" style="display: none;">
             <a class="selected-movie-link" id="selectedMovieLink" target="_blank" rel="noopener noreferrer"></a>
             <div class="selected-movie-score" id="selectedMovieScore"></div>
+            <div class="selected-movie-genres" id="selectedMovieGenres"></div>
+            <div class="selected-movie-description" id="selectedMovieDescription"></div>
         </div>
     </div>
     
@@ -376,6 +407,22 @@ HTML_TEMPLATE = """
                 }
                 document.getElementById('selectedMovieScore').textContent = 
                     `${randomMovie.score.toFixed(2)} / 5.00`;
+
+                // Update Genres
+                const genresContainer = document.getElementById('selectedMovieGenres');
+                genresContainer.innerHTML = '';
+                if (randomMovie.genres && randomMovie.genres.length > 0) {
+                    randomMovie.genres.forEach(genre => {
+                        const tag = document.createElement('span');
+                        tag.className = 'genre-tag';
+                        tag.textContent = genre;
+                        genresContainer.appendChild(tag);
+                    });
+                }
+
+                // Update Description
+                const descEl = document.getElementById('selectedMovieDescription');
+                descEl.textContent = randomMovie.description || '';
                 
                 const posterImg = document.getElementById('selectedMoviePoster');
                 if (randomMovie.image) {

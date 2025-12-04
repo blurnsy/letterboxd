@@ -351,7 +351,17 @@ HTML_TEMPLATE = """
         function updateStats() {
             document.getElementById('totalMovies').textContent = movies.length;
             if (movies.length > 0) {
-                const avgScore = movies.reduce((sum, m) => sum + m.score, 0) / movies.length;
+                const scores = movies
+                    .map(m => {
+                        if (typeof m.score === 'number') return m.score;
+                        if (typeof m.score === 'string') {
+                            const parsed = parseFloat(m.score);
+                            return isNaN(parsed) ? 0 : parsed;
+                        }
+                        return 0;
+                    });
+                const sum = scores.reduce((acc, score) => acc + score, 0);
+                const avgScore = sum / scores.length;
                 document.getElementById('averageScore').textContent = avgScore.toFixed(2);
             }
         }

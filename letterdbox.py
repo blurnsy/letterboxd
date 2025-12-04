@@ -104,7 +104,6 @@ def test_scrape_films(sb) -> None:
             film['description'] = description
             film['genres'] = genres
             
-            # Polite sleep
             sb.sleep(0.5)
             
         except Exception as e:
